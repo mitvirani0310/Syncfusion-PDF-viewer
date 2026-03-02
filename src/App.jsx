@@ -20,72 +20,199 @@ import ExtractedDataPanel from './components/ExtractedDataPanel';
 import TopBar from './components/Topbar';
 import './App.css';
 
-// ─────────────────────────────────────────────────────────────────
-// LICENSE KEY — paste your key from:
-// https://www.syncfusion.com/account/claim-license-key
-// ─────────────────────────────────────────────────────────────────
 registerLicense('Ngo9BigBOggjHTQxAR8/V1JGaF1cXmhKYVFzWmFZfVhgcV9DZlZUQmYuP1ZhSXxVdkdhX39YcX1WR2RbU0V9XEA=');
 
-// ───────────────────────────────────────────────────────────────
-// SAMPLE EXTRACTED DATA — replace with your API response
+const SAMPLE_DATA = {
+  "barcode_1": {
+    "page": 11, "confidence": 0.955,
+    "coordinates": [0.341, 0.302, 0.651, 0.421],
+    "image_width": 1700, "image_height": 2200
+  },
+  "barcode_2": {
+    "page": 12, "confidence": 0.943,
+    "coordinates": [0.348, 0.306, 0.645, 0.420],
+    "image_width": 1700, "image_height": 2200
+  },
+  "signature_1": {
+    "page": 8, "confidence": 0.730,
+    "coordinates": [0.576, 0.118, 0.715, 0.172],
+    "image_width": 1700, "image_height": 2789
+  },
+  "signature_2": {
+    "page": 8, "confidence": 0.399,
+    "coordinates": [0.044, 0.086, 0.271, 0.139],
+    "image_width": 1700, "image_height": 2789
+  },
+  "signature_3": {
+    "page": 14, "confidence": 0.829,
+    "coordinates": [0.046, 0.120, 0.442, 0.205],
+    "image_width": 1700, "image_height": 2789
+  },
+  "signature_4": {
+    "page": 14, "confidence": 0.438,
+    "coordinates": [0.154, 0.236, 0.488, 0.308],
+    "image_width": 1700, "image_height": 2789
+  },
+  "signature_5": {
+    "page": 29, "confidence": 0.833,
+    "coordinates": [0.074, 0.776, 0.351, 0.850],
+    "image_width": 1700, "image_height": 2182
+  },
+  "Due_Date-Variable": {
+    "answer": "03/01/2026", "page_number": 1, "confidence_score": 1,
+    "original_value": "1st Payment Date: MARCH 1, 2026"
+  },
+  "Effective_Date-Fixed": {
+    "answer": "01/23/2026", "page_number": 1, "confidence_score": 1,
+    "original_value": "Disbursement Date: JANUARY 23, 2026"
+  },
+  "Credit_Limit-Fixed": {
+    "answer": "$47,400.00", "page_number": 15, "confidence_score": 1,
+    "original_value": "Credit Limit: $47,400.00"
+  },
+  "Loan_Maturity_Date-Fixed": {
+    "answer": "02/01/2036", "page_number": 15, "confidence_score": 0.9,
+    "original_value": "FEBRUARY 1, 2036"
+  },
+  "Late_Fee-Fixed": {
+    "answer": "5.000%", "page_number": 18, "confidence_score": 0.9,
+    "original_value": "late fee of 5.000%"
+  },
+  "Primary_Borrower_Last_Name-Fixed": {
+    "answer": "IVY", "page_number": 15, "confidence_score": 0.95,
+    "original_value": "REGINA L IVY"
+  },
+  "Property_Mailing_City-Fixed": {
+    "answer": "STATE COURT OF BIBB COUNTY STATE OF GEORGIA", "page_number": 15, "confidence_score": 1,
+    "original_value": "MOBILE, AL 36609-3010"
+  },
+};
+
+const isBarcodeKey   = (k) => /barcode/i.test(k);
+const isSignatureKey = (k) => /signature|sign/i.test(k);
+const hasCoords      = (v) => Array.isArray(v?.coordinates) && v.coordinates.length === 4;
+
 // ─────────────────────────────────────────────────────────────────
-const SAMPLE_EXTRACTED_DATA = [
-  { id: 1, key: 'Debt/Suit Amount', value: null, page: 0, confidence: 0 },
-  { id: 2, key: 'Servee Last Name', value: 'CRAFTER', page: 32, confidence: 100 },
-  { id: 3, key: 'Court Case Number', value: null, page: 2, confidence: 0 },
-  { id: 4, key: 'Servee First Name', value: 'HAROLD', page: 32, confidence: 100 },
-  { id: 5, key: 'Client File Number', value: '5XXGT4L3XKG360137', page: 28, confidence: 90 },
-  { id: 6, key: 'Servee Address ZIP', value: '31210-7903', page: 32, confidence: 100 },
-  { id: 7, key: 'Servee Address City', value: 'MACON', page: 32, confidence: 100 },
-  { id: 8, key: 'Court Name - Summons', value: 'STATE COURT OF BIBB COUNTY STATE OF GEORGIA', page: 32, confidence: 95 },
-  { id: 9, key: 'Court Type - Summons', value: 'STATE', page: 32, confidence: 95 },
-  { id: 10, key: 'Date Filed - Summons', value: null, page: 0, confidence: 0 },
-  { id: 11, key: 'Servee Address State', value: 'GA', page: 32, confidence: 100 },
-  { id: 12, key: 'Court State - Summons', value: 'GEORGIA', page: 32, confidence: 100 },
-  { id: 13, key: 'Servee Street Address', value: '1090 SAINT ANDREWS RD', page: 32, confidence: 100 },
-  { id: 14, key: 'Court Case Number-Temp', value: null, page: 32, confidence: 0 },
-  { id: 15, key: 'Court County - Summons', value: 'BIBB', page: 32, confidence: 100 },
-  { id: 16, key: 'Date Filed - Complaint', value: null, page: 0, confidence: 0 },
-  { id: 17, key: 'Plaintiff Name - Summons', value: 'AMERICREDIT FINANCIAL SERVICES, INC., DBA GM FINANCIAL', page: 32, confidence: 100 },
-  { id: 18, key: 'Primary Defendant Name - Summons', value: 'HAROLD CRAFTER', page: 32, confidence: 100 },
-  { id: 19, key: 'Primary Defendant Address - Summons', value: '1090 SAINT ANDREWS RD MACON, GA 31210-7903', page: 32, confidence: 100 },
-  { id: 20, key: 'Primary Defendant Address - Complaint', value: '1090 SAINT ANDREWS RD MACON, GA 31210', page: 18, confidence: 100 },
-  { id: 21, key: 'Secondary Defendant/Garnishee Name - Summons', value: null, page: 0, confidence: 0 },
-  { id: 22, key: 'Secondary Defendant/Garnishee Address - Summons', value: null, page: 0, confidence: 0 }
-];
+// HOW THE HIGHLIGHT WORKS
+// ─────────────────────────────────────────────────────────────────
+// We use Syncfusion's official annotation API: viewer.annotation.addAnnotation()
+// This draws a Rectangle annotation directly on the PDF canvas — it handles
+// zoom, scroll, page rendering automatically. No DOM hacking needed.
+//
+// Coordinates from API are normalised 0-1 fractions of image size.
+// Syncfusion's addAnnotation expects pixel values at 100% zoom relative
+// to the page's natural PDF point size (width/height from viewer.pageData).
+//
+// Conversion:
+//   sfX = x_fraction * pageWidth_pts
+//   sfY = y_fraction * pageHeight_pts
+//
+// We store the annotation ID so we can delete it before drawing a new one.
+// ─────────────────────────────────────────────────────────────────
 
 export default function App() {
-  const viewerRef   = useRef(null);
+  const viewerRef    = useRef(null);
   const fileInputRef = useRef(null);
 
-  const [fileName,         setFileName]         = useState('No file loaded');
-  const [currentPage,      setCurrentPage]      = useState(1);
-  const [totalPages,       setTotalPages]        = useState(0);
-  const [searchText,       setSearchText]        = useState('');
-  const [activeItemId,     setActiveItemId]      = useState(null);
-  const [searchResults,    setSearchResults]     = useState({ current: 0, total: 0 });
-  const [isSearching,      setIsSearching]       = useState(false);
-  const [pdfLoaded,        setPdfLoaded]         = useState(false);
-  const [dragging,         setDragging]          = useState(false);
+  const [fileName,       setFileName]       = useState('No file loaded');
+  const [currentPage,    setCurrentPage]    = useState(1);
+  const [totalPages,     setTotalPages]     = useState(0);
+  const [searchText,     setSearchText]     = useState('');
+  const [activeKey,      setActiveKey]      = useState(null);
+  const [searchResults,  setSearchResults]  = useState({ current: 0, total: 0 });
+  const [isSearching,    setIsSearching]    = useState(false);
+  const [pdfLoaded,      setPdfLoaded]      = useState(false);
+  const [dragging,       setDragging]       = useState(false);
+  // Track the active overlay to show
+  const [activeOverlay,  setActiveOverlay]  = useState(null);
 
-  // ── Syncfusion event: document loaded ────────────────────────
+  // ── Effect to inject overlay directly into page DOM ───────────
+  // This makes the overlay move naturally with the page (like react-pdf-viewer)
+  useEffect(() => {
+    if (!activeOverlay || !pdfLoaded || currentPage !== activeOverlay.page) {
+      // Remove any existing overlay
+      const existingOverlay = document.getElementById('sf-page-overlay');
+      if (existingOverlay) {
+        existingOverlay.remove();
+      }
+      return;
+    }
+
+    // Find the specific page element in Syncfusion's DOM
+    const attachOverlayToPage = () => {
+      const pageContainer = document.querySelector(
+        `#pdf-viewer-container_pageDiv_${activeOverlay.page - 1}`
+      );
+
+      if (!pageContainer) {
+        setTimeout(attachOverlayToPage, 100);
+        return;
+      }
+
+      // Remove any existing overlay first
+      const existingOverlay = document.getElementById('sf-page-overlay');
+      if (existingOverlay) {
+        existingOverlay.remove();
+      }
+
+      // Create overlay div
+      const overlayDiv = document.createElement('div');
+      overlayDiv.id = 'sf-page-overlay';
+      
+      const [x1, y1, x2, y2] = activeOverlay.coordinates;
+      const isBarcode = activeOverlay.type === 'barcode';
+      
+      // Style the overlay - positioned absolutely within the page container
+      Object.assign(overlayDiv.style, {
+        position: 'absolute',
+        left: `${x1 * 100}%`,
+        top: `${y1 * 100}%`,
+        width: `${(x2 - x1) * 100}%`,
+        height: `${(y2 - y1) * 100}%`,
+        border: isBarcode ? '3px solid #2563EB' : '3px solid #f97316',
+        backgroundColor: isBarcode ? 'rgba(37, 99, 235, 0.15)' : 'rgba(249, 115, 22, 0.15)',
+        pointerEvents: 'none',
+        zIndex: '9999',
+        boxSizing: 'border-box',
+      });
+
+      // Make sure the page container has position relative
+      if (getComputedStyle(pageContainer).position === 'static') {
+        pageContainer.style.position = 'relative';
+      }
+
+      // Append overlay as a child of the page container
+      pageContainer.appendChild(overlayDiv);
+    };
+
+    // Initial attachment with delay to ensure page is rendered
+    setTimeout(attachOverlayToPage, 200);
+
+    // Cleanup: remove overlay when component unmounts or overlay changes
+    return () => {
+      const existingOverlay = document.getElementById('sf-page-overlay');
+      if (existingOverlay) {
+        existingOverlay.remove();
+      }
+    };
+  }, [activeOverlay, currentPage, pdfLoaded]);
+
+  // ── Syncfusion events ─────────────────────────────────────────
   const onDocumentLoaded = useCallback((args) => {
     setPdfLoaded(true);
-    // pageCount comes from the event args
-    const count = args?.pageCount ?? args?.currentPageNumber ?? 0;
+    const count = args?.pageCount ?? 0;
     if (count > 0) setTotalPages(count);
     setCurrentPage(1);
+    setActiveOverlay(null);
   }, []);
 
-  // Fallback: poll for pageCount after load (Syncfusion sometimes
-  // fires documentLoad before the count is available)
   useEffect(() => {
     if (!pdfLoaded) return;
-    const timer = setTimeout(() => {
-      const count = viewerRef.current?.pageCount;
-      if (count && count > 0) setTotalPages(count);
+    const t = setTimeout(() => {
+      const c = viewerRef.current?.pageCount;
+      if (c > 0) setTotalPages(c);
     }, 800);
-    return () => clearTimeout(timer);
+    return () => clearTimeout(t);
   }, [pdfLoaded]);
 
   const onPageChanged = useCallback((args) => {
@@ -93,9 +220,8 @@ export default function App() {
   }, []);
 
   const onSearchHighlight = useCallback((args) => {
-    if (args?.searchCount != null) {
+    if (args?.searchCount != null)
       setSearchResults(prev => ({ ...prev, total: args.searchCount }));
-    }
   }, []);
 
   // ── Navigation ────────────────────────────────────────────────
@@ -104,41 +230,36 @@ export default function App() {
   }, []);
 
   // ── Text search ───────────────────────────────────────────────
-  const startSearch = useCallback((text) => {
-    if (!viewerRef.current || !text.trim()) return;
-    viewerRef.current.textSearch.searchText(text, false /* case-insensitive */);
+  const doSearch = useCallback((text) => {
+    if (!viewerRef.current || !text?.trim()) return;
+    viewerRef.current.textSearch.searchText(text, false);
     setIsSearching(true);
     setSearchResults({ current: 1, total: 0 });
   }, []);
 
   const handleSearchChange = useCallback((text) => {
     setSearchText(text);
-    setActiveItemId(null);
+    setActiveKey(null);
+    setActiveOverlay(null);
     if (text.trim()) {
-      startSearch(text);
+      doSearch(text);
     } else {
       viewerRef.current?.textSearch.cancelTextSearch();
       setIsSearching(false);
       setSearchResults({ current: 0, total: 0 });
     }
-  }, [startSearch]);
+  }, [doSearch]);
 
   const handleSearchNext = useCallback(() => {
     if (!isSearching) return;
     viewerRef.current?.textSearch.searchNext();
-    setSearchResults(prev => ({
-      ...prev,
-      current: prev.current < prev.total ? prev.current + 1 : 1,
-    }));
+    setSearchResults(p => ({ ...p, current: p.current < p.total ? p.current + 1 : 1 }));
   }, [isSearching]);
 
   const handleSearchPrev = useCallback(() => {
     if (!isSearching) return;
     viewerRef.current?.textSearch.searchPrevious();
-    setSearchResults(prev => ({
-      ...prev,
-      current: prev.current > 1 ? prev.current - 1 : prev.total,
-    }));
+    setSearchResults(p => ({ ...p, current: p.current > 1 ? p.current - 1 : p.total }));
   }, [isSearching]);
 
   const clearSearch = useCallback(() => {
@@ -146,22 +267,51 @@ export default function App() {
     setSearchText('');
     setIsSearching(false);
     setSearchResults({ current: 0, total: 0 });
-    setActiveItemId(null);
+    setActiveKey(null);
+    setActiveOverlay(null);
   }, []);
 
-  // ── Data panel click (key or value) ──────────────────────────
-  const handleDataItemClick = useCallback((item, field) => {
-    setActiveItemId(item.id);
-    const text = field === 'key' ? item.key : item.value;
-    setSearchText(text);
-    goToPage(item.page);
-    // slight delay to let page render before searching
-    setTimeout(() => {
+  // ── Data panel click handler ──────────────────────────────────
+  const handleDataItemClick = useCallback((key, valueObj) => {
+    setActiveKey(key);
+
+    if (hasCoords(valueObj)) {
+      // ── Barcode / Signature → show CSS overlay ─────────────
       viewerRef.current?.textSearch.cancelTextSearch();
-      viewerRef.current?.textSearch.searchText(text, false);
-      setIsSearching(true);
-      setSearchResults({ current: 1, total: 0 });
-    }, 400);
+      setIsSearching(false);
+      setSearchResults({ current: 0, total: 0 });
+      setSearchText('');
+
+      const overlay = {
+        key,
+        type:         isBarcodeKey(key) ? 'barcode' : 'signature',
+        page:         valueObj.page,
+        coordinates:  valueObj.coordinates,
+      };
+      setActiveOverlay(overlay);
+
+      // Navigate to the page
+      goToPage(valueObj.page);
+
+    } else {
+      // ── Regular field → text search ────────────────────────
+      setActiveOverlay(null);
+
+      const primary  = valueObj?.answer ?? valueObj?.value ?? '';
+      const fallback = valueObj?.original_value ?? '';
+      const pageNum  = valueObj?.page_number ?? valueObj?.page ?? 1;
+      const text = (primary && primary !== 'null' && primary !== 'N/A') ? primary : fallback;
+
+      setSearchText(text);
+      if (pageNum > 0) goToPage(pageNum);
+      setTimeout(() => {
+        if (!text?.trim()) return;
+        viewerRef.current?.textSearch.cancelTextSearch();
+        viewerRef.current?.textSearch.searchText(text, false);
+        setIsSearching(true);
+        setSearchResults({ current: 1, total: 0 });
+      }, 400);
+    }
   }, [goToPage]);
 
   // ── File loading ─────────────────────────────────────────────
@@ -177,6 +327,7 @@ export default function App() {
       setPdfLoaded(false);
       setTotalPages(0);
       clearSearch();
+      setActiveOverlay(null);
       viewerRef.current?.load(`data:application/pdf;base64,${base64}`, null);
       setFileName(file.name);
       setCurrentPage(1);
@@ -184,12 +335,7 @@ export default function App() {
     reader.readAsDataURL(file);
   }, [clearSearch]);
 
-  const handleFileInputChange = (e) => {
-    loadFile(e.target.files[0]);
-    e.target.value = '';
-  };
-
-  // ── Drag & drop ───────────────────────────────────────────────
+  const handleFileInputChange = (e) => { loadFile(e.target.files[0]); e.target.value = ''; };
   const handleDragOver  = (e) => { e.preventDefault(); setDragging(true); };
   const handleDragLeave = (e) => { if (!e.currentTarget.contains(e.relatedTarget)) setDragging(false); };
   const handleDrop      = (e) => { e.preventDefault(); setDragging(false); loadFile(e.dataTransfer.files[0]); };
@@ -197,7 +343,6 @@ export default function App() {
   return (
     <div className="app-container">
 
-      {/* ═══ TOP BAR ═══ */}
       <TopBar
         fileName={fileName}
         searchText={searchText}
@@ -213,14 +358,13 @@ export default function App() {
 
       <div className="main-layout">
 
-        {/* ═══ LEFT: PDF VIEWER ═══ */}
+        {/* ════ LEFT: PDF VIEWER ════ */}
         <div
           className="viewer-panel"
           onDragOver={handleDragOver}
           onDragLeave={handleDragLeave}
           onDrop={handleDrop}
         >
-          {/* Status bar */}
           <div className="viewer-status-bar">
             <span className="status-filename">{fileName}</span>
             {pdfLoaded && totalPages > 0 && (
@@ -228,10 +372,7 @@ export default function App() {
             )}
           </div>
 
-          {/* Viewer + drop overlay */}
           <div className="viewer-container">
-
-            {/* Empty / drag-drop state */}
             {!pdfLoaded && (
               <div
                 className={`drop-overlay ${dragging ? 'drop-overlay-active' : ''}`}
@@ -246,14 +387,9 @@ export default function App() {
                       <polyline points="9 15 12 12 15 15"/>
                     </svg>
                   </div>
-                  <p className="drop-heading">
-                    {dragging ? 'Drop PDF here' : 'Open a PDF to get started'}
-                  </p>
-                  <p className="drop-body">Drag &amp; drop a PDF file here, or click the button below</p>
-                  <button
-                    className="drop-upload-btn"
-                    onClick={(e) => { e.stopPropagation(); fileInputRef.current?.click(); }}
-                  >
+                  <p className="drop-heading">{dragging ? 'Drop PDF here' : 'Open a PDF to get started'}</p>
+                  <p className="drop-body">Drag &amp; drop a PDF file here, or click below</p>
+                  <button className="drop-upload-btn" onClick={(e) => { e.stopPropagation(); fileInputRef.current?.click(); }}>
                     <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
                       <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
                       <polyline points="17 8 12 3 7 8"/>
@@ -263,76 +399,55 @@ export default function App() {
                   </button>
                   <span className="drop-formats">PDF files only</span>
                 </div>
-                <input
-                  ref={fileInputRef}
-                  type="file"
-                  accept="application/pdf,.pdf"
-                  style={{ display: 'none' }}
-                  onChange={handleFileInputChange}
-                />
+                <input ref={fileInputRef} type="file" accept="application/pdf,.pdf"
+                  style={{ display: 'none' }} onChange={handleFileInputChange} />
               </div>
             )}
 
-            {/*
-              ══════════════════════════════════════════════════════
-               STANDALONE MODE — No server/backend required
-               resourceUrl = Syncfusion WASM engine via CDN
-               Do NOT add serviceUrl — that caused the Ajax error
-
-               For production (offline):
-                 cp -r node_modules/@syncfusion/ej2-pdfviewer/dist/ej2-pdfviewer-lib public/pdfviewer-resources
-                 Then use: resourceUrl="/pdfviewer-resources"
-              ══════════════════════════════════════════════════════
-            */}
-            <PdfViewerComponent
-              ref={viewerRef}
-              id="pdf-viewer-container"
-              resourceUrl="https://cdn.syncfusion.com/ej2/24.1.41/dist/ej2-pdfviewer-lib"
-              style={{ height: '100%', width: '100%' }}
-              documentLoad={onDocumentLoaded}
-              pageChange={onPageChanged}
-              textSearchHighlight={onSearchHighlight}
-              enableToolbar={false}
-              enableNavigationToolbar={false}
-              enableAnnotation={false}
-              enableFormFields={false}
-              enableTextSelection={true}
-              enableTextSearch={true}
-              enableMagnification={true}
-              enablePrint={false}
-              zoomValue={100}
-            >
-              <Inject services={[
-                Toolbar, Magnification, Navigation,
-                LinkAnnotation, BookmarkView, ThumbnailView,
-                Print, TextSelection, Annotation,
-                TextSearch, FormFields, FormDesigner,
-              ]} />
-            </PdfViewerComponent>
+            <div style={{ position: 'relative', width: '100%', height: '100%' }}>
+              <PdfViewerComponent
+                ref={viewerRef}
+                id="pdf-viewer-container"
+                resourceUrl="https://cdn.syncfusion.com/ej2/24.1.41/dist/ej2-pdfviewer-lib"
+                style={{ height: '100%', width: '100%' }}
+                documentLoad={onDocumentLoaded}
+                pageChange={onPageChanged}
+                textSearchHighlight={onSearchHighlight}
+                enableToolbar={false}
+                enableNavigationToolbar={false}
+                enableAnnotation={false}
+                enableFormFields={false}
+                enableTextSelection={true}
+                enableTextSearch={true}
+                enableMagnification={true}
+                enablePrint={false}
+                zoomValue={100}
+              >
+                <Inject services={[
+                  Toolbar, Magnification, Navigation,
+                  LinkAnnotation, BookmarkView, ThumbnailView,
+                  Print, TextSelection, Annotation,
+                  TextSearch, FormFields, FormDesigner,
+                ]} />
+              </PdfViewerComponent>
+              {/* Overlay is injected directly into page DOM via useEffect */}
+            </div>
           </div>
 
-          {/* Bottom nav — only visible after PDF is loaded */}
           {pdfLoaded && (
             <div className="viewer-nav-bar">
               <div className="nav-controls">
-                <button
-                  className="nav-btn"
+                <button className="nav-btn"
                   onClick={() => goToPage(Math.max(1, currentPage - 1))}
-                  disabled={currentPage <= 1}
-                  title="Previous page"
-                >
+                  disabled={currentPage <= 1}>
                   <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
                     <polyline points="15 18 9 12 15 6"/>
                   </svg>
                 </button>
-
                 <div className="page-input-group">
                   <input
-                    type="number"
-                    className="page-input"
-                    value={currentPage}
-                    min={1}
-                    max={totalPages || 1}
+                    type="number" className="page-input"
+                    value={currentPage} min={1} max={totalPages || 1}
                     onChange={(e) => {
                       const p = parseInt(e.target.value, 10);
                       if (p >= 1 && p <= totalPages) { setCurrentPage(p); goToPage(p); }
@@ -340,28 +455,23 @@ export default function App() {
                   />
                   <span className="page-total">/ {totalPages || '…'}</span>
                 </div>
-
-                <button
-                  className="nav-btn"
+                <button className="nav-btn"
                   onClick={() => goToPage(Math.min(totalPages, currentPage + 1))}
-                  disabled={currentPage >= totalPages}
-                  title="Next page"
-                >
+                  disabled={currentPage >= totalPages}>
                   <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
                     <polyline points="9 18 15 12 9 6"/>
                   </svg>
                 </button>
               </div>
-
               <div className="zoom-controls">
-                <button className="nav-btn" onClick={() => viewerRef.current?.magnification.zoomOut()} title="Zoom out">
+                <button className="nav-btn" onClick={() => viewerRef.current?.magnification.zoomOut()}>
                   <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
                     <circle cx="11" cy="11" r="8"/>
                     <line x1="21" y1="21" x2="16.65" y2="16.65"/>
                     <line x1="8" y1="11" x2="14" y2="11"/>
                   </svg>
                 </button>
-                <button className="nav-btn" onClick={() => viewerRef.current?.magnification.zoomIn()} title="Zoom in">
+                <button className="nav-btn" onClick={() => viewerRef.current?.magnification.zoomIn()}>
                   <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
                     <circle cx="11" cy="11" r="8"/>
                     <line x1="21" y1="21" x2="16.65" y2="16.65"/>
@@ -369,22 +479,22 @@ export default function App() {
                     <line x1="8" y1="11" x2="14" y2="11"/>
                   </svg>
                 </button>
-                <button className="nav-btn fit-btn" onClick={() => viewerRef.current?.fitPage('FitPage')} title="Fit page">
-                  Fit
-                </button>
+                <button className="nav-btn fit-btn"
+                  onClick={() => viewerRef.current?.fitPage('FitPage')}>Fit</button>
               </div>
             </div>
           )}
         </div>
 
-        {/* ═══ RIGHT: EXTRACTED DATA PANEL ═══ */}
+        {/* ════ RIGHT: DATA PANEL ════ */}
         <ExtractedDataPanel
-          data={SAMPLE_EXTRACTED_DATA}
-          activeItemId={activeItemId}
-          onDataItemClick={handleDataItemClick}
-          onPageClick={(page) => goToPage(page)}
+          data={SAMPLE_DATA}
+          activeKey={activeKey}
+          activeOverlay={activeOverlay}
           currentPage={currentPage}
           pdfLoaded={pdfLoaded}
+          onItemClick={handleDataItemClick}
+          onPageClick={goToPage}
         />
       </div>
     </div>
