@@ -1,13 +1,62 @@
-body {
+*, *::before, *::after {
+  box-sizing: border-box;
   margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
-    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
-    sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+  padding: 0;
 }
 
-code {
-  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
-    monospace;
+:root {
+  --bg-primary:       #0f1117;
+  --bg-secondary:     #161b27;
+  --bg-card:          #1c2333;
+  --bg-hover:         #232d42;
+  --border:           #2a3347;
+  --border-light:     #334060;
+  --accent-blue:      #3b82f6;
+  --accent-blue-glow: rgba(59,130,246,0.15);
+  --accent-green:     #10b981;
+  --accent-green-glow:rgba(16,185,129,0.15);
+  --accent-purple:    #8b5cf6;
+  --text-primary:     #e8edf5;
+  --text-secondary:   #8b95a8;
+  --text-muted:       #4b5568;
+  --score-high:       #10b981;
+  --score-mid:        #f59e0b;
+  --score-low:        #ef4444;
+  --font-sans:        'DM Sans', sans-serif;
+  --font-mono:        'DM Mono', monospace;
 }
+
+html, body {
+  font-family: var(--font-sans);
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  /* Let the body scroll naturally — our app-container is position:fixed */
+  overflow: hidden;
+}
+
+/*
+  KEY FIX: position:fixed makes the app container independent of the
+  document flow entirely. The Syncfusion license banner pushes the body
+  content down, but a fixed element is always relative to the viewport.
+  So the app always fills exactly the screen — banner or not.
+*/
+#root {
+  position: fixed;
+  inset: 0;          /* top:0 right:0 bottom:0 left:0 */
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  z-index: 1;
+}
+
+/* ── Syncfusion viewer overrides ── */
+.e-pdfviewer {
+  height: 100% !important;
+  background: var(--bg-secondary) !important;
+}
+
+/* ── Scrollbar styling ── */
+::-webkit-scrollbar       { width: 5px; height: 5px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border-light); border-radius: 10px; }
+::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }
